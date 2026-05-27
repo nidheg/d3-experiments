@@ -587,14 +587,17 @@
                 .attr('d', d => `M 50 ${d.y} L ${canvasWidth - 50} ${d.y}`)
                 .attr('stroke', d => d.color);
 
-            // Add line labels
+            // Add line labels with event count
             g.selectAll('.line-label')
                 .data(timelines)
                 .join('text')
                 .attr('class', 'line-label')
                 .attr('x', 60)
                 .attr('y', d => d.y - 10)
-                .text(d => d.name);
+                .text(d => {
+                    const eventCount = events.filter(e => e.timelineId === d.id && !e.parentId).length;
+                    return `${d.name} (${eventCount})`;
+                });
         }
 
         // Draw events with clustering
