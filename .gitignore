@@ -1,1 +1,22 @@
-Nothing should be ignored based on the provided file changes. The only added file is `timeline-events-app.html`, which appears to be a source/html file that should be tracked in version control.
+```gitignore
+# Build artifacts
+*.css
+*.js
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+```
