@@ -436,116 +436,60 @@
         // Create initial sample data
         function createInitialData() {
             // Create timelines
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 3; i++) {
                 timelines.push({
                     id: i,
                     name: `Линия ${i + 1}`,
-                    y: 100 + i * 120,
+                    y: 100 + i * 150,
                     color: colors[i]
                 });
             }
 
-            // Create sample events (50-200 per timeline)
+            // Create sample events
             const now = new Date();
-            const timeRange = 86400000 * 90; // 90 days range
-            
-            // Generate 75 events per timeline (total 375 events for 5 timelines)
-            for (let t = 0; t < timelines.length; t++) {
-                const eventsPerTimeline = 75;
-                for (let i = 0; i < eventsPerTimeline; i++) {
-                    const timeOffset = Math.random() * timeRange;
-                    const eventTime = new Date(now.getTime() - timeOffset);
+            for (let i = 0; i < 15; i++) {
+                const timelineId = Math.floor(Math.random() * timelines.length);
+                const timeOffset = Math.random() * 86400000 * 30; // 30 days range
+                const eventTime = new Date(now.getTime() - timeOffset);
+                
+                events.push({
+                    id: eventIdCounter++,
+                    timelineId: timelineId,
+                    parentId: null,
+                    time: eventTime,
+                    title: `Событие ${i + 1}`,
+                    description: `Описание события ${i + 1}. Это пример подробного описания.`,
+                    data: {
+                        type: ['Тип A', 'Тип B', 'Тип C'][Math.floor(Math.random() * 3)],
+                        priority: ['Низкий', 'Средний', 'Высокий'][Math.floor(Math.random() * 3)],
+                        status: ['Активно', 'Завершено', 'В ожидании'][Math.floor(Math.random() * 3)],
+                        value: Math.floor(Math.random() * 1000),
+                        category: `Категория ${Math.floor(Math.random() * 5) + 1}`
+                    }
+                });
+            }
+
+            // Create some hierarchical events (events attached to other events)
+            for (let i = 0; i < 5; i++) {
+                if (events.length > i) {
+                    const parentEvent = events[i];
+                    const childTime = new Date(parentEvent.time.getTime() + Math.random() * 3600000); // Within 1 hour
                     
                     events.push({
                         id: eventIdCounter++,
-                        timelineId: t,
-                        parentId: null,
-                        time: eventTime,
-                        title: `Событие ${t + 1}-${i + 1}`,
-                        description: `Описание события на линии ${t + 1}. Это пример подробного описания события.`,
+                        timelineId: parentEvent.timelineId,
+                        parentId: parentEvent.id,
+                        time: childTime,
+                        title: `Подсобытие ${i + 1}`,
+                        description: `Это подсобытие привязано к "${parentEvent.title}"`,
                         data: {
-                            type: ['Тип A', 'Тип B', 'Тип C', 'Тип D'][Math.floor(Math.random() * 4)],
-                            priority: ['Низкий', 'Средний', 'Высокий', 'Критический'][Math.floor(Math.random() * 4)],
-                            status: ['Активно', 'Завершено', 'В ожидании', 'Отменено'][Math.floor(Math.random() * 4)],
-                            value: Math.floor(Math.random() * 1000),
-                            category: `Категория ${Math.floor(Math.random() * 5) + 1}`
+                            type: 'Подсобытие',
+                            priority: 'Средний',
+                            status: 'Активно',
+                            value: Math.floor(Math.random() * 500),
+                            parentTitle: parentEvent.title
                         }
                     });
-                }
-            }
-
-            // Create hierarchical event trees (events attached to other events)
-            // Example tree 1: Root -> Child -> Grandchild
-            for (let t = 0; t < timelines.length; t++) {
-                const timelineEvents = events.filter(e => e.timelineId === t && !e.parentId);
-                
-                // Create several event trees per timeline
-                const treeCount = 5;
-                for (let tree = 0; tree < treeCount; tree++) {
-                    const rootIndex = Math.floor(Math.random() * timelineEvents.length);
-                    if (rootIndex < timelineEvents.length) {
-                        const rootEvent = timelineEvents[rootIndex];
-                        
-                        // Add children to root
-                        const childCount = Math.floor(Math.random() * 3) + 1;
-                        let prevEvent = rootEvent;
-                        
-                        for (let c = 0; c < childCount; c++) {
-                            const childTime = new Date(prevEvent.time.getTime() + (Math.random() * 3600000 * 24)); // Within 24 hours
-                            
-                            const childEvent = {
-                                id: eventIdCounter++,
-                                timelineId: rootEvent.timelineId,
-                                parentId: prevEvent.id,
-                                time: childTime,
-                                title: `Подсобытие ${tree + 1}-${c + 1} (линия ${t + 1})`,
-                                description: `Это подсобытие привязано к "${prevEvent.title}"`,
-                                data: {
-                                    type: 'Подсобытие',
-                                    priority: ['Низкий', 'Средний', 'Высокий'][Math.floor(Math.random() * 3)],
-                                    status: 'Активно',
-                                    value: Math.floor(Math.random() * 500),
-                                    parentTitle: prevEvent.title,
-                                    level: c + 1
-                                }
-                            };
-                            
-                            events.push(childEvent);
-                            prevEvent = childEvent;
-                        }
-                    }
-                }
-            }
-            
-            // Example tree 2: Multiple children from single parent (branching)
-            for (let t = 0; t < timelines.length; t++) {
-                const timelineEvents = events.filter(e => e.timelineId === t && !e.parentId);
-                const branchRootIndex = Math.floor(Math.random() * timelineEvents.length);
-                
-                if (branchRootIndex < timelineEvents.length) {
-                    const branchRoot = timelineEvents[branchRootIndex];
-                    const branchChildren = Math.floor(Math.random() * 4) + 2; // 2-5 children
-                    
-                    for (let b = 0; b < branchChildren; b++) {
-                        const childTime = new Date(branchRoot.time.getTime() + (Math.random() * 7200000)); // Within 2 hours
-                        
-                        events.push({
-                            id: eventIdCounter++,
-                            timelineId: branchRoot.timelineId,
-                            parentId: branchRoot.id,
-                            time: childTime,
-                            title: `Ветвь ${b + 1} от "${branchRoot.title}"`,
-                            description: `Это ответвление от события "${branchRoot.title}"`,
-                            data: {
-                                type: 'Ответвление',
-                                priority: 'Средний',
-                                status: 'Активно',
-                                value: Math.floor(Math.random() * 300),
-                                parentTitle: branchRoot.title,
-                                branchIndex: b
-                            }
-                        });
-                    }
                 }
             }
         }
@@ -587,17 +531,14 @@
                 .attr('d', d => `M 50 ${d.y} L ${canvasWidth - 50} ${d.y}`)
                 .attr('stroke', d => d.color);
 
-            // Add line labels with event count
+            // Add line labels
             g.selectAll('.line-label')
                 .data(timelines)
                 .join('text')
                 .attr('class', 'line-label')
                 .attr('x', 60)
                 .attr('y', d => d.y - 10)
-                .text(d => {
-                    const eventCount = events.filter(e => e.timelineId === d.id && !e.parentId).length;
-                    return `${d.name} (${eventCount})`;
-                });
+                .text(d => d.name);
         }
 
         // Draw events with clustering
@@ -698,23 +639,12 @@
                     const childX = getTimePosition(child.time);
                     const childY = parentY + 30; // Child events appear below the line
                     
-                    // Connection from parent event on timeline to child event - can be any direction
                     g.append('line')
                         .attr('class', 'connection-line')
                         .attr('x1', parentX)
                         .attr('y1', parentY)
                         .attr('x2', childX)
                         .attr('y2', childY);
-                    
-                    // Vertical line from child event back to timeline (strictly vertical)
-                    g.append('line')
-                        .attr('class', 'connection-line')
-                        .attr('x1', childX)
-                        .attr('y1', childY)
-                        .attr('x2', childX)
-                        .attr('y2', parentY)
-                        .attr('stroke-dasharray', '3,3')
-                        .attr('opacity', '0.4');
                     
                     // Draw child event
                     g.append('circle')
@@ -730,62 +660,50 @@
             });
         }
 
-        // Draw time labels on each timeline line
+        // Draw time labels
         function drawTimeLabels() {
             const now = new Date();
-            const timeRange = 86400000 * 90; // 90 days to match data
+            const timeRange = 86400000 * 30; // 30 days
             
-            // Draw labels for each timeline
-            timelines.forEach(timeline => {
-                // Draw labels every 10 days
-                for (let i = 0; i <= 9; i++) {
-                    const time = new Date(now.getTime() - (timeRange / 9) * i);
-                    const x = getTimePosition(time);
-                    
-                    // Time label on the timeline line
-                    g.append('text')
-                        .attr('class', 'time-label')
-                        .attr('x', x)
-                        .attr('y', timeline.y - 8)
-                        .attr('text-anchor', 'middle')
-                        .text(formatDateFull(time));
-                    
-                    // Small tick mark on the timeline
-                    g.append('line')
-                        .attr('x1', x)
-                        .attr('y1', timeline.y - 5)
-                        .attr('x2', x)
-                        .attr('y2', timeline.y + 5)
-                        .attr('stroke', timeline.color)
-                        .attr('stroke-width', 1);
-                }
-            });
+            // Draw labels every 3 days
+            for (let i = 0; i <= 10; i++) {
+                const time = new Date(now.getTime() - (timeRange / 10) * i);
+                const x = getTimePosition(time);
+                
+                g.append('text')
+                    .attr('class', 'time-label')
+                    .attr('x', x)
+                    .attr('y', canvasHeight - 20)
+                    .attr('text-anchor', 'middle')
+                    .text(formatDate(time));
+                
+                // Grid line
+                g.append('line')
+                    .attr('x1', x)
+                    .attr('y1', 50)
+                    .attr('x2', x)
+                    .attr('y2', canvasHeight - 40)
+                    .attr('stroke', '#ecf0f1')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '2,2');
+            }
         }
 
         // Get X position for a given time
         function getTimePosition(time) {
             const now = new Date();
-            const timeRange = 86400000 * 90; // 90 days to match data
+            const timeRange = 86400000 * 30; // 30 days
             const msDiff = now.getTime() - time.getTime();
             const ratio = msDiff / timeRange;
             return 50 + ratio * (canvasWidth - 100);
         }
 
-        // Format date for display (DD.MM.YY)
+        // Format date for display
         function formatDate(date) {
             return date.toLocaleDateString('ru-RU', {
                 day: '2-digit',
                 month: '2-digit',
                 year: '2-digit'
-            });
-        }
-        
-        // Format date full (DD.MM.YYYY)
-        function formatDateFull(date) {
-            return date.toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
             });
         }
 
@@ -795,11 +713,9 @@
             currentZoom = event.transform.k;
             updateZoomInfo();
             
-            // Redraw everything with updated clustering and time labels
-            g.selectAll('.event-point, .cluster-circle, .event-cluster, .time-label, .connection-line').remove();
+            // Redraw events with updated clustering
+            g.selectAll('.event-point, .cluster-circle, .event-cluster').remove();
             drawEvents();
-            drawConnections();
-            drawTimeLabels();
         }
 
         // Reset zoom
@@ -819,9 +735,9 @@
                 canvasWidth = newWidth;
                 canvasHeight = newHeight;
                 
-                // Update timeline Y positions with consistent spacing
+                // Update timeline Y positions
                 timelines.forEach((timeline, index) => {
-                    timeline.y = 100 + index * 120;
+                    timeline.y = 100 + index * (canvasHeight / timelines.length);
                 });
                 
                 renderChart();
@@ -836,13 +752,13 @@
             timelines.push({
                 id: newId,
                 name: `Линия ${newId + 1}`,
-                y: 100 + newId * 120,
+                y: 100 + newId * 100,
                 color: colors[newId % colors.length]
             });
             
             // Adjust canvas height if needed
-            if (timelines.length * 120 > canvasHeight - 100) {
-                canvasHeight = timelines.length * 120 + 100;
+            if (timelines.length * 100 > canvasHeight - 100) {
+                canvasHeight = timelines.length * 100 + 100;
                 document.getElementById('canvasHeight').value = canvasHeight;
             }
             
@@ -854,17 +770,15 @@
             if (timelines.length === 0) return;
             
             const now = new Date();
-            const timeOffset = Math.random() * 86400000 * 90; // 90 days range
+            const timeOffset = Math.random() * 86400000 * 30;
             const eventTime = new Date(now.getTime() - timeOffset);
             const timelineId = Math.floor(Math.random() * timelines.length);
             
             // 30% chance to attach to existing event
             let parentId = null;
             if (Math.random() < 0.3 && events.length > 0) {
-                const randomParent = events.filter(e => e.timelineId === timelineId && !e.parentId)[Math.floor(Math.random() * events.filter(e => e.timelineId === timelineId && !e.parentId).length)];
-                if (randomParent) {
-                    parentId = randomParent.id;
-                }
+                const randomParent = events[Math.floor(Math.random() * events.length)];
+                parentId = randomParent.id;
             }
             
             events.push({
@@ -875,8 +789,8 @@
                 title: `Новое событие ${eventIdCounter}`,
                 description: `Событие создано ${new Date().toLocaleString('ru-RU')}`,
                 data: {
-                    type: ['Тип A', 'Тип B', 'Тип C', 'Тип D'][Math.floor(Math.random() * 4)],
-                    priority: ['Низкий', 'Средний', 'Высокий', 'Критический'][Math.floor(Math.random() * 4)],
+                    type: ['Тип A', 'Тип B', 'Тип C'][Math.floor(Math.random() * 3)],
+                    priority: ['Низкий', 'Средний', 'Высокий'][Math.floor(Math.random() * 3)],
                     status: 'Активно',
                     value: Math.floor(Math.random() * 1000),
                     category: `Категория ${Math.floor(Math.random() * 5) + 1}`
