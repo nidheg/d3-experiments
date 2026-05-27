@@ -1,50 +1,70 @@
-# D3.js Experiments
+# Приложение "Диаграмма Временных Событий"
 
-A collection of interactive data visualization experiments built with D3.js.
+Интерактивное веб-приложение для визуализации деревьев событий на нескольких временных шкалах, построенное с использованием D3.js.
 
-## Projects
+## Возможности
 
-### 1. D3 Chart App (`d3-chart-app.html`)
-An interactive bar chart visualization with:
-- Beautiful gradient background design
-- Responsive layout with smooth animations
-- Hover effects on chart bars
-- Clean, modern UI with white card container
+*   **Несколько временных линий**: Параллельное отображение независимых временных шкал.
+*   **Иерархия событий**: Поддержка древовидной структуры событий (родитель -> потомки).
+*   **Динамическая кластеризация**: Автоматическое объединение близких событий в кластеры при уменьшении масштаба для сохранения читаемости.
+*   **Интерактивность**:
+    *   Масштабирование (колесико мыши) и панорамирование (перетаскивание).
+    *   Всплывающие подсказки с деталями события при наведении (название и дата в формате ДД.ММ.ГГГГ).
+    *   Строгая сортировка событий по времени (слева направо, от ранних к поздним).
+    *   Классические временные шкалы с динамическими метками времени на каждой линии.
+    *   Уменьшенные метки и тики на временных линиях.
+*   **Управление данными**:
+    *   Добавление новых временных линий.
+    *   Генерация случайных деревьев событий.
+    *   Автоматический счетчик событий на каждой линии.
+    *   От 50 до 200 событий на линию при инициализации.
+*   **Визуализация**:
+    *   Вертикальные связи событий с осью времени.
+    *   Связи между родительскими и дочерними событиями любого направления.
+    *   Примеры деревьев событий (3-8 деревьев на линию).
 
-**To view:** Open `d3-chart-app.html` in a web browser.
+## Технологии
 
-### 2. Timeline Events App (`timeline-events-app.html`)
-A comprehensive timeline events diagram featuring:
-- Horizontal scrollable timeline view
-- Event cards with category-based color coding
-- Zoom controls (in/out/reset)
-- Category filtering functionality
-- Responsive design with gradient header
-- Interactive event details display
+*   **HTML5**
+*   **CSS3**
+*   **JavaScript (ES6+)**
+*   **D3.js (v7)** - библиотека для визуализации данных.
 
-**To view:** Open `timeline-events-app.html` in a web browser.
+## Быстрый старт
 
-## Technologies Used
+1.  Скачайте файлы проекта:
+    *   `timeline-events-app.html`
+    *   `timeline-events-app.css`
+    *   `timeline-events-app.js`
+2.  Откройте файл `timeline-events-app.html` в любом современном браузере (Chrome, Firefox, Safari, Edge).
+3.  Установка сервера не требуется, приложение работает локально.
 
-- **D3.js v7** - Data-Driven Documents library for creating dynamic visualizations
-- **HTML5** - Semantic structure
-- **CSS3** - Modern styling with gradients, flexbox, and animations
-- **Vanilla JavaScript** - No framework dependencies
+## Использование
 
-## Getting Started
+*   **Навигация**:
+    *   *Колесико мыши*: Увеличение/уменьшение масштаба.
+    *   *Левая кнопка мыши (drag)*: Перемещение холста.
+*   **Просмотр деталей**: Наведите курсор на событие, чтобы увидеть всплывающую подсказку с названием и датой.
+*   **Кластеризация**: При изменении масштаба события автоматически объединяются в кластеры или разворачиваются.
+*   **Добавление данных**:
+    *   Нажмите **"+ Добавить линию"**, чтобы создать новую временную шкалу.
+    *   Нажмите **"+ Добавить дерево событий"**, чтобы сгенерировать группу связанных событий.
+*   **Просмотр полной информации**: Кликните на событие, чтобы открыть модальное окно с подробными данными.
 
-1. Clone this repository
-2. Open any of the `.html` files directly in a modern web browser
-3. No build process or server required - these are self-contained HTML files
+## Структура проекта
 
-## Browser Support
+*   `timeline-events-app.html` — Каркас приложения и подключение библиотек.
+*   `timeline-events-app.css` — Стили интерфейса, элементов диаграммы, всплывающих подсказок и модальных окон.
+*   `timeline-events-app.js` — Логика отрисовки, обработки данных, зума, кластеризации и интерактивности.
 
-These experiments work best in modern browsers:
-- Chrome
-- Firefox
-- Safari
-- Edge
+## Браузерная поддержка
 
-## License
+Приложение поддерживает все современные браузеры:
+*   Google Chrome
+*   Mozilla Firefox
+*   Safari
+*   Microsoft Edge
+
+## Лицензия
 
 MIT
