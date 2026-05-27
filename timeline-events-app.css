@@ -176,6 +176,17 @@ body {
     opacity: 0.8;
 }
 
+/* Tooltip Styles */
+.tooltip {
+    pointer-events: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.4;
+}
+
+.tooltip br {
+    margin-top: 4px;
+}
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;

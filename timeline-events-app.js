@@ -18,11 +18,33 @@ const colors = [
     '#1abc9c', '#e67e22', '#34495e', '#16a085', '#c0392b'
 ];
 
+// Tooltip element
+let tooltip = null;
+
 // Initialize the application
 function init() {
+    createTooltip();
     createInitialData();
     renderChart();
     updateZoomInfo();
+}
+
+// Create tooltip element
+function createTooltip() {
+    tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('visibility', 'hidden')
+        .style('background', 'rgba(44, 62, 80, 0.95)')
+        .style('color', 'white')
+        .style('padding', '10px 15px')
+        .style('border-radius', '8px')
+        .style('font-size', '13px')
+        .style('pointer-events', 'none')
+        .style('z-index', '10000')
+        .style('box-shadow', '0 5px 20px rgba(0,0,0,0.3)')
+        .style('max-width', '300px');
 }
 
 // Create initial sample data with 50-200 events per timeline
@@ -163,15 +185,16 @@ function drawTimelines() {
     });
 }
 
-// Draw events with clustering
+// Draw events with clustering and tooltips
 function drawEvents() {
-    const clusterThreshold = 30 / currentZoom; // Pixels threshold for clustering
+    const clusterThreshold = 50 / currentZoom; // Pixels threshold for clustering
     
     // Group events by timeline and proximity
     const clusters = {};
     
     timelines.forEach(timeline => {
         const timelineEvents = events.filter(e => e.timelineId === timeline.id && !e.parentId);
+        // Sort events from left to right (early to late)
         const sortedEvents = timelineEvents.sort((a, b) => a.time - b.time);
         
         clusters[timeline.id] = [];
@@ -208,7 +231,8 @@ function drawEvents() {
             const y = timeline.y;
             
             if (cluster.length === 1) {
-                // Single event
+                // Single event with tooltip
+                const event = cluster[0];
                 g.append('circle')
                     .attr('class', 'event-point')
                     .attr('cx', x)
@@ -217,6 +241,13 @@ function drawEvents() {
                     .attr('fill', '#2ecc71')
                     .attr('stroke', '#27ae60')
                     .attr('stroke-width', 2)
+                    .on('mouseover', function(e) {
+                        showTooltip(e, this, `${cluster[0].title}<br/>${formatDateFull(cluster[0].time)}`);
+                    })
+                    .on('mousemove', function(e) {
+                        moveTooltip(e);
+                    })
+                    .on('mouseout', hideTooltip)
                     .on('click', () => showEventDetails(cluster[0]));
             } else {
                 // Cluster
@@ -291,34 +322,41 @@ function drawConnections() {
     });
 }
 
-// Draw time labels on each timeline line
+// Draw time labels on each timeline line (dynamic based on zoom)
 function drawTimeLabels() {
     const now = new Date();
     const timeRange = 86400000 * 60; // 60 days
     
+    // Calculate how many labels to show based on zoom level
+    const labelCount = Math.floor(12 / currentZoom) + 3;
+    const step = Math.max(1, Math.floor(labelCount / 8));
+    
     timelines.forEach(timeline => {
-        // Draw labels every 5 days on each timeline
-        for (let i = 0; i <= 12; i++) {
-            const time = new Date(now.getTime() - (timeRange / 12) * i);
+        // Draw dynamic labels on each timeline
+        for (let i = 0; i <= labelCount; i += step) {
+            const time = new Date(now.getTime() - (timeRange / labelCount) * i);
             const x = getTimePosition(time);
             
-            // Time label on the timeline
+            // Skip if out of bounds
+            if (x < 50 || x > canvasWidth - 50) continue;
+            
+            // Time label on the timeline (smaller font)
             g.append('text')
                 .attr('class', 'time-label-on-line')
                 .attr('x', x)
-                .attr('y', timeline.y - 15)
+                .attr('y', timeline.y - 12)
                 .attr('text-anchor', 'middle')
                 .text(formatDateFull(time));
             
-            // Small tick mark on the timeline
+            // Small tick mark on the timeline (smaller)
             g.append('line')
                 .attr('class', 'time-tick')
                 .attr('x1', x)
-                .attr('y1', timeline.y - 5)
+                .attr('y1', timeline.y - 3)
                 .attr('x2', x)
-                .attr('y2', timeline.y + 5)
+                .attr('y2', timeline.y + 3)
                 .attr('stroke', timeline.color)
-                .attr('stroke-width', 2);
+                .attr('stroke-width', 1);
         }
     });
 }
@@ -362,6 +400,29 @@ function handleZoom(event) {
     drawEvents();
     drawConnections();
     drawTimeLabels();
+}
+
+// Show tooltip
+function showTooltip(event, element, html) {
+    const [mx, my] = d3.pointer(event);
+    tooltip
+        .style('visibility', 'visible')
+        .style('left', (mx + 15) + 'px')
+        .style('top', (my - 10) + 'px')
+        .html(html);
+}
+
+// Move tooltip with mouse
+function moveTooltip(event) {
+    const [mx, my] = d3.pointer(event);
+    tooltip
+        .style('left', (mx + 15) + 'px')
+        .style('top', (my - 10) + 'px');
+}
+
+// Hide tooltip
+function hideTooltip() {
+    tooltip.style('visibility', 'hidden');
 }
 
 // Reset zoom
